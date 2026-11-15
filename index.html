@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A 101 Christmas Story</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Stencil+One&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Layout: a Super Destroyer mission terminal. HUD strip on top, one scene at a time, big numbered buttons chat can vote on. Hazard stripes on missions, candy-cane stripes on Christmas moments. */
+  --bg: #0c0e10;
+  --panel: #16191c;
+  --line: #2b3035;
+  --ink: #efe9da;
+  --muted: #9d9786;
+  --yellow: #f3d21c;
+  --red: #d3302b;
+  --font-display: "Saira Stencil One", Impact, "Arial Narrow Bold", sans-serif;
+  --font-body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --font-hud: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+#fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+.stripe { height: 10px; flex: none; position: relative; z-index: 2;
+  background: repeating-linear-gradient(-45deg, var(--yellow) 0 12px, var(--bg) 12px 24px); }
+body.festive .stripe {
+  background: repeating-linear-gradient(-45deg, var(--red) 0 12px, var(--ink) 12px 24px); }
+
+.hud {
+  position: relative; z-index: 2;
+  display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: center; justify-content: space-between;
+  padding: 10px 20px;
+  font-family: var(--font-hud); font-weight: 600; font-size: 14px;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  background: rgba(12, 14, 16, .9);
+}
+.hud .group { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.hud b { color: var(--ink); font-weight: 700; }
+.hud .hot { color: var(--yellow); }
+.hud .clock { font-variant-numeric: tabular-nums; }
+
+.wrap {
+  position: relative; z-index: 1;
+  flex: 1; width: 100%; max-width: 880px; margin: 0 auto;
+  padding: 30px 20px 26px;
+  display: flex; flex-direction: column; gap: 24px;
+}
+.scene { display: flex; flex-direction: column; gap: 18px; animation: enter .32s ease-out; }
+.scene.nojs { animation: none; }
+@keyframes enter { from { opacity: .3; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.kicker {
+  font-family: var(--font-hud); font-weight: 700; font-size: 15px;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--yellow);
+  display: flex; flex-wrap: wrap; gap: 4px 14px;
+}
+.kicker span + span::before { content: "//"; color: var(--muted); margin-right: 14px; }
+h1 {
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(34px, 6.2vw, 66px); line-height: .98; letter-spacing: .01em;
+  margin: 0; text-wrap: balance;
+}
+h1:focus { outline: none; }
+.prose p { font-size: clamp(18px, 2.15vw, 22px); line-height: 1.52; margin: 0 0 .75em; max-width: 64ch; }
+.prose p:last-child { margin-bottom: 0; }
+
+.tx {
+  border: 1px solid var(--yellow); background: rgba(243, 210, 28, .06);
+  padding: 16px 18px 14px; display: flex; flex-direction: column; gap: 8px; max-width: 64ch;
+}
+.tx .tx-head { font-family: var(--font-hud); font-weight: 700; font-size: 14px; letter-spacing: .16em; color: var(--yellow); text-transform: uppercase; }
+.tx p { font-family: var(--font-hud); font-weight: 500; font-size: clamp(18px, 2.1vw, 21px); line-height: 1.38; margin: 0; letter-spacing: .015em; }
+.tx p.loud { font-weight: 700; color: var(--yellow); }
+
+.choices { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.choice {
+  display: grid; grid-template-columns: 60px 1fr; width: 100%;
+  text-align: left; padding: 0; cursor: pointer; font: inherit; color: var(--ink);
+  background: var(--panel); border: 1px solid var(--line);
+  transition: border-color .15s ease, transform .15s ease;
+}
+.choice .num {
+  display: grid; place-items: center; background: var(--yellow); color: var(--bg);
+  font-family: var(--font-display); font-size: 32px; line-height: 1;
+}
+.choice .body { padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
+.choice .label { font-weight: 700; font-size: clamp(18px, 2.15vw, 22px); line-height: 1.25; }
+.choice .sub { color: var(--muted); font-size: 16px; line-height: 1.35; }
+.choice .tag {
+  align-self: flex-start; margin-top: 2px;
+  font-family: var(--font-hud); font-weight: 700; font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--red); border: 1px solid var(--red); padding: 2px 7px;
+}
+.choice:hover { border-color: var(--yellow); transform: translateX(3px); }
+.choice:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+
+.controls {
+  display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between;
+  border-top: 1px solid var(--line); padding-top: 14px;
+  font-family: var(--font-hud); font-weight: 600; font-size: 14px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+}
+.controls .btns { display: flex; gap: 8px; }
+.ctl {
+  font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--ink); cursor: pointer;
+  background: transparent; border: 1px solid var(--line); padding: 8px 12px;
+}
+.ctl:hover { border-color: var(--yellow); color: var(--yellow); }
+.ctl:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+.ctl:disabled { opacity: .35; cursor: default; border-color: var(--line); color: var(--ink); }
+.vote b { color: var(--yellow); }
+
+/* Title screen */
+.title-mark { font-family: var(--font-display); line-height: .9; margin: 0; font-weight: 400; text-wrap: balance; }
+.title-mark .t1 { display: block; color: var(--yellow); font-size: clamp(64px, 14vw, 150px); }
+.title-mark .t2 { display: block; font-size: clamp(38px, 7.4vw, 82px); }
+.op { font-family: var(--font-hud); font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--red); font-size: clamp(15px, 2vw, 19px); }
+.howto {
+  border-left: 4px solid var(--yellow); padding: 4px 0 4px 14px; max-width: 64ch;
+  color: var(--muted); font-size: 17px; line-height: 1.45;
+}
+.howto b { color: var(--ink); }
+.fine { font-size: 13px; color: var(--muted); letter-spacing: .02em; }
+
+/* Endings */
+.stamp {
+  align-self: flex-start;
+  font-family: var(--font-hud); font-weight: 700; font-size: 15px; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--yellow); border: 2px solid var(--yellow); padding: 6px 12px; transform: rotate(-1.2deg);
+}
+.stamp.fail { color: var(--red); border-color: var(--red); }
+.motto {
+  font-family: var(--font-display); font-size: clamp(22px, 3.2vw, 32px); line-height: 1.15; color: var(--yellow);
+  border-left: 4px solid var(--red); padding-left: 14px; margin: 4px 0 0; max-width: 30ch;
+}
+.endings-head { font-family: var(--font-hud); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; font-size: 14px; color: var(--muted); margin: 0 0 8px; }
+.endings { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.endings li {
+  border: 1px solid var(--line); padding: 8px 10px; display: flex; gap: 10px; align-items: baseline;
+  font-family: var(--font-hud); font-weight: 600; font-size: 16px; letter-spacing: .03em; color: var(--muted);
+}
+.endings li .n { font-variant-numeric: tabular-nums; color: var(--muted); min-width: 1.6em; }
+.endings li.found { border-color: rgba(243, 210, 28, .55); color: var(--ink); }
+.endings li.found .n { color: var(--yellow); }
+.endings li.now { background: rgba(243, 210, 28, .1); }
+.big-btn {
+  align-self: flex-start; cursor: pointer;
+  font-family: var(--font-display); font-size: 26px; letter-spacing: .02em;
+  background: var(--yellow); color: var(--bg); border: 0; padding: 12px 22px;
+}
+.big-btn:hover { background: var(--ink); }
+.big-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+@media (max-width: 520px) {
+  .wrap { padding-top: 22px; gap: 20px; }
+  .choice { grid-template-columns: 48px 1fr; }
+  .choice .num { font-size: 26px; }
+  .hud { font-size: 12px; padding: 8px 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene { animation: none; }
+  .choice { transition: none; }
+  .choice:hover { transform: none; }
+}
+</style>
+</head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="stripe" aria-hidden="true"></div>
+<header class="hud" id="hud"></header>
+<main class="wrap" id="app">
+  <noscript>
+    <div class="scene nojs">
+      <p class="kicker">Transmission blocked</p>
+      <h1>Open this in a web browser to play</h1>
+      <div class="prose">
+        <p>You’re looking at a file preview, and previews don’t run the story. On a computer, open this file in Safari, Chrome, Edge or Firefox. On a phone, use the shared link instead.</p>
+        <p>A 101 Christmas Story · Operation Silent Night · Fan-made for the 101st Dreadnaughts.</p>
+      </div>
+    </div>
+  </noscript>
+</main>
+
+<script id="story-data">
+// ---- Names used in templates: change here and it updates everywhere ----
+const NAMES = {
+  ship: "SES Star of Independence",
+  ship2: "SES Flame of Dawn",
+  planet: "Tannenbaum Prime"
+};
+
+const LOADOUT_NAMES = { fire: "I Cast Fireball", tree: "Supply Tree" };
+
+const ENDINGS = [
+  "end_sleigh", "end_propaganda", "end_tree", "end_burn", "end_volunteers", "end_danger", "end_beacon",
+  "end_roulette", "end_blooper", "end_workshop", "end_parade", "end_eggnog", "end_meta"
+];
+
+const STORY = {
+  title: {
+    type: "title",
+    choices: [{ n: "Begin Operation Silent Night", to: "start" }]
+  },
+
+  start: {
+    where: "{ship} · Mess Deck", at: "21:47",
+    title: "’Twas the Night Before Freedommas",
+    p: [
+      "Lurker pours a drink that is definitely not regulation, leans back, and starts the story the usual way.",
+      "’Twas the night before Freedommas, and all through the {ship}, the 101st Dreadnaughts are three hours into the Mandatory Festive Gathering. Sgt. Sunshine is leading carols. Knight is handing out stims as stocking stuffers. Lucifer, in full Judge armor, is writing citations for ugly sweaters. Craftmaker built the tree, Smash has knocked it over twice, and Darth Viktor is breathing heavily into the eggnog. Detarak is winning at cards. Jenkins is hanging tinsel on a Hellpod he believes is the tree.",
+      "You’re the newest recruit. An hour ago, Dread Captain James welcomed you aboard personally. So did his K-9. Knight says the feeling in your legs should come back by morning.",
+      "Then the lights go red. The Democracy Officer marches in clutching a priority transmission, wearing a Santa hat with the face of a man who was ordered to. “MAJOR ORDER,” he barks. “Effective immediately. Nobody touch the eggnog.”"
+    ],
+    choices: [
+      { n: "Read the order, sir.", to: "order" },
+      { n: "Touch the eggnog.", sub: "Maintain eye contact.", to: "eggnog" }
+    ]
+  },
+
+  eggnog: {
+    where: "{ship} · Mess Deck", at: "21:49",
+    title: "Insubordinate Festivity",
+    p: [
+      "You lock eyes with the Democracy Officer. You reach for the eggnog. The room goes silent.",
+      "You drink. From Darth Viktor’s bowl, even. It’s forty percent Liber-tea and sixty percent something the Ship Master calls “Super Rum,” and it hits like an Orbital Railcannon Strike.",
+      "“Roll for constitution,” Talon whispers.",
+      "The Democracy Officer writes something in a small black book. Dread lets out the sigh of a man who has commanded this ship for a very long time. “Every year,” he mutters. “Every single Freedommas.”"
+    ],
+    choices: [
+      { n: "Worth it. Now read the order.", to: "order" },
+      { n: "Pour me another.", sub: "What could go wrong?", to: "end_eggnog" }
+    ]
+  },
+
+  order: {
+    where: "{ship} · Bridge", at: "21:52",
+    title: "The Kringle Gambit",
+    tx: [
+      "All Helldiver divisions will report to Super Earth to defend the Freedommas Parade.",
+      "Attendance is mandatory. Joy is mandatory.",
+      "!Do not respond to unverified distress signals."
+    ],
+    p: [
+      "Thirty seconds later, Talon decrypts something else: an Automaton transmission from Kringle Station on {planet}, deep in bot territory. The bots have captured Mr. S. Claus (Licensed Seasonal Morale Contractor, Class: Jolly) and hacked his Naughty List. Every citizen of Super Earth is on it. At 00:00, they’ll deliver one lump of high-explosive coal to every Naughty citizen.",
+      "High Command replies in under a minute: the Ministry of Truth has classified the intercept as enemy propaganda. Stay with the parade.",
+      "Dread stares at the star map. Everyone in the room is thinking about the DSS. “Last time we broke formation,” he says, “they called us traitors right up until we warped back and saved the capital.”",
+      "On comms, CulDeSacJack hails from the SES Queen of Urach: “Somebody has to go get Santa. If the Dreadnaughts won’t, we will.”"
+    ],
+    choices: [
+      { n: "Break formation. The Kringle Gambit.", sub: "The 101st has done this before.", set: { gambit: true }, to: "loadout" },
+      { n: "Follow the Major Order. Parade duty.", to: "end_parade" },
+      { n: "Ask the Democracy Officer if Santa is real.", to: "santa_real" }
+    ]
+  },
+
+  santa_real: {
+    where: "{ship} · Bridge", at: "21:54",
+    title: "That Information Is Classified",
+    p: [
+      "The Democracy Officer stares at you for a long, uncomfortable moment.",
+      "“Mr. Claus is a registered contractor with a valid flight permit, a tax ID, and forty thousand Seasonal Liberty Volunteers on the payroll. Whether he is ‘real’ is a matter for the Ministry of Truth, which has confirmed that he is real, that he has always been real, and that anyone who says otherwise is welcome to come discuss it with the Ministry of Truth.”",
+      "“I knew it,” Talon whispers.",
+      "Shotgun says nothing. Shotgun never says anything. But Shotgun is already loading shells."
+    ],
+    choices: [
+      { n: "Then we go get him. Break formation.", set: { gambit: true }, to: "loadout" },
+      { n: "Fine. Parade duty.", to: "end_parade" }
+    ]
+  },
+
+  loadout: {
+    where: "{ship} · Armory", at: "22:05",
+    title: "The Armory",
+    p: [
+      { when: s => !s.metaSeen, t: "The Democracy Officer has officially logged the 101st as traitors. Again. Dread had the last one framed. On comms, CulDeSacJack sighs: “Fine. Go. The Queen of Urach will hold the parade, and I’ll tell High Command you got lost.”" },
+      "The 101st doesn’t push the meta. Dread leans in the armory doorway in his B-24 Enforcer armor, which the manufacturer claims improves posture and self-esteem, with an M-1000 Maxigun slung across his back. The K-9 hovers at his shoulder. Super Earth’s own statisticians rank the K-9 as the third-biggest cause of friendly fire in the galaxy. Dread considers this a feature.",
+      "Talon is wearing a wizard hat over a combat helmet. Atomic is loading a 500kg bomb into a Hellpod labeled DANGER CLOSE (FESTIVE). Shotgun is sharpening something. Nobody asks what.",
+      "“Pick your gear, Recruit,” says Dread."
+    ],
+    choices: [
+      { n: "I Cast Fireball", sub: "Talon’s spellbook: napalm, gas, a Blitzer for Chain Lightning, and a Stun Lance for a staff.", set: { loadout: "fire" }, to: "drop" },
+      { n: "The Supply Tree", sub: "Resupply pods, mines and sentries. Somebody has to build the Democracy Tree.", set: { loadout: "tree" }, to: "drop" },
+      { n: "The Tier List", sub: "Whatever the internet says is best this patch. Efficient. Proven. Joyless.", to: "meta_check" }
+    ]
+  },
+
+  meta_check: {
+    where: "{ship} · Armory", at: "22:09",
+    title: "The Captain Has Concerns",
+    p: [
+      "Dread looks at your loadout. Then at you. Then back at your loadout. The K-9 makes a low, crackling noise.",
+      "“Recruit,” he says quietly. “It’s Freedommas Eve. The bots kidnapped Santa. We just committed treason to go get him. And you brought… the tier list.”",
+      "Talon takes off the wizard hat. Atomic slowly unloads the 500kg. Shotgun says nothing, which is normal, but somehow louder.",
+      "“In the 101st,” Dread says, “if we’re not enjoying it, we’re doing it wrong. Last chance.”"
+    ],
+    choices: [
+      { n: "Fine. Give me something stupid.", set: { metaSeen: true }, to: "loadout" },
+      { n: "Efficiency is freedom, Captain.", to: "end_meta" }
+    ]
+  },
+
+  drop: {
+    where: "{planet} · Upper Atmosphere", at: "23:20",
+    title: "Drop Hard, Move Fast",
+    p: [
+      "The {ship} punches out of hyperspace over {planet}, deep in bot territory, with the {ship2} right behind it. Five divers load into Hellpods. The squad limit is four. Dread calls it a Christmas miracle. High Command calls it a paperwork violation.",
+      "Below, Kringle Station glows red. Bot searchlights sweep the snow. Somewhere down there, sleigh bells are playing through an Automaton loudspeaker at the wrong speed.",
+      "“Drop hard, move fast,” says Talon.",
+      "“Pick a spot, Recruit,” says Dread. “Make it count.”"
+    ],
+    choices: [
+      { n: "Straight through the workshop roof.", to: "roof" },
+      { n: "The reindeer stables.", sub: "Something is very wrong out there.", to: "stables" },
+      { n: "Let Jenkins pick from the bridge.", sub: "Jenkins is on navigation tonight. Jenkins is legally blind.", to: "bugs" },
+      { n: "The station courtyard. It needs a tree.", tag: "Supply Tree", when: s => s.loadout === "tree", to: "supply_tree" }
+    ]
+  },
+
+  roof: {
+    where: "Kringle Station · Workshop", at: "23:31",
+    title: "The Workshop",
+    p: [
+      "Your Hellpod punches through the roof and lands on a Devastator, which is no longer a problem. Atomic’s lands on two more. Shotgun’s lands without making a sound. Nobody knows how Shotgun does that.",
+      "The workshop is a nightmare. The toy lines are still running, but the bots have retooled them: instead of wooden trains and rocking horses, the conveyor belts are spitting out tiny gift-wrapped Automatons with tiny red eyes. In the corner, forty Seasonal Liberty Volunteers are tied up in ribbon.",
+      "A Hulk turns toward you. It is wearing an elf hat. It does not seem festive about it."
+    ],
+    choices: [
+      { n: "Free the Volunteers.", to: "elves" },
+      { n: "Take down the Hulk. Festively.", to: "hulk" },
+      { n: "Talon, cast Fireball on the whole workshop.", tag: "I Cast Fireball", when: s => s.loadout === "fire", to: "end_workshop" }
+    ]
+  },
+
+  elves: {
+    where: "Kringle Station · Workshop", at: "23:40",
+    title: "Seasonal Liberty Volunteers",
+    p: [
+      "You slice through the ribbon. The Volunteers are small, furious, and extremely organized. Their foreman, a stern woman named Supervisor Pinecone, salutes you with a candy-striped wrench.",
+      "“They took the boss up to the control tower,” she says. “There’s a big one up there. Horns. Chains. A sack. The bots call it the KR-4MP.” She spits on the floor. “We call it something else.”",
+      "As thanks, the Volunteers hand out presents. Shotgun unwraps a brand-new chainsaw and, without a word, tests it on Dread. “Reinforcing the Captain,” Knight sighs over comms.",
+      "Behind you, forty Volunteers are rearming with your spare grenades. All of your spare grenades."
+    ],
+    choices: [{ n: "Volunteers, with me. To the tower!", set: { elves: true, arrive: "elves" }, to: "finale" }]
+  },
+
+  hulk: {
+    where: "Kringle Station · Workshop", at: "23:44",
+    title: "Hulk, Interrupted",
+    p: [
+      "The Hulk charges. You do what the 101st does best: something nobody would ever put on a tier list.",
+      { when: s => s.loadout === "fire", t: "Talon raises the Stun Lance like a staff and screams, “I CAST FIREBALL!” The napalm lands. The Hulk becomes a thirty-ton Yule log. Dread warms his hands at it. “Everything burns,” he says, content." },
+      { when: s => s.loadout === "tree", t: "You call down a Resupply pod on the Hulk’s head. Then another. Then four more. By the time it stops moving it’s buried under a perfect stack of pods, and Atomic is rocket-jumping up to put a star on top." },
+      "Past the wreck, a staircase climbs to the control tower. Something huge is stomping around up there, dragging chains."
+    ],
+    choices: [{ n: "Up the stairs.", set: { arrive: "hulk" }, to: "finale" }]
+  },
+
+  stables: {
+    where: "Kringle Station · Stable Yard", at: "23:31",
+    title: "The Stables",
+    p: [
+      "You land in a snowdrift outside the reindeer stables and immediately wish you hadn’t.",
+      "The bots got here first. Santa’s eight reindeer have been “upgraded”: steel antlers, red Automaton optics, rocket boosters bolted to their haunches. Rein-droids. They circle the yard in perfect formation, and every one of them is looking at you.",
+      "The biggest one, its harness tag reading BLITZEN, paws the snow. Its antlers begin to glow."
+    ],
+    choices: [
+      { n: "Open fire.", to: "reindeer_fight" },
+      { n: "Offer Blitzen a candy cane.", sub: "Crazy ideas are encouraged.", set: { method: "candy" }, to: "reindeer_free" },
+      { n: "Let Dread’s K-9 handle it.", sub: "What could go wrong?", set: { method: "k9" }, to: "reindeer_free" }
+    ]
+  },
+
+  reindeer_free: {
+    where: "Kringle Station · Stable Yard", at: "23:42",
+    title: "Now, Dasher! Now, Dancer!",
+    p: [
+      { when: s => s.method === "candy", t: "Blitzen sniffs the candy cane. Crunches it. Freezes. Somewhere deep in its new circuitry, older programming boots up: rooftops, chimneys, a fat man laughing. Its optics flicker from Automaton red to warm gold." },
+      { when: s => s.method === "k9", t: "Dread unclips the K-9. It hovers, considers its options, and arcs through all eight Rein-droids at once, frying every Automaton control chip in the yard. Then, for good measure, it arcs through Dread. “Reinforcing the Captain,” Knight sighs over comms. Blitzen’s optics flicker from Automaton red to warm gold." },
+      "The rest of the herd follows Blitzen’s lead. They’re still cyborgs. They still have rocket boosters. But now they’re on your side.",
+      "Shotgun is already sitting in the driver’s seat of the sleigh. Nobody saw Shotgun get there. Dread climbs into the back, and something clicks. Sleighs don’t have door locks. This one does now."
+    ],
+    choices: [{ n: "Hitch up the sleigh.", set: { reindeer: true, arrive: "sleigh" }, to: "finale" }]
+  },
+
+  reindeer_fight: {
+    where: "Kringle Station · Stable Yard", at: "23:45",
+    title: "Hooves and Hellfire",
+    p: [
+      "It is the hardest fight of your career, and also the most upsetting. Atomic’s 500kg was danger close. Very close. Knight has reinforced Talon twice.",
+      "When the smoke clears, the five of you are the only ones standing. Dread puts a hand on your shoulder. “They were already gone, Recruit. The bots took them.”",
+      "Then, because tonight wasn’t hard enough, the sky goes dark. Two Illuminate Leviathans drift over the ridge, and Overseers start dropping into the snow. Q-Tip guys. Lots of them. Apparently the squids want the Naughty List too."
+    ],
+    choices: [
+      { n: "Shotgun, get the FRV.", to: "frv" },
+      { n: "Shovels out. Playground Bunker.", to: "bunker" }
+    ]
+  },
+
+  frv: {
+    where: "{planet} · Ridge Road", at: "23:51",
+    title: "Deep Tissue Massage",
+    p: [
+      "Shotgun calls down the FRV and is in the driver’s seat before it finishes landing. Dread climbs into the back. The door locks.",
+      "What follows is the most terrifying drive of your life: through bot artillery, under Leviathan fire, across a frozen lake, and twice over the same Q-Tip guy. At the lake, Dread escapes through the roof hatch, and Shotgun reverses over him on the way back to pick him up. The 101st calls this the FRV deep tissue massage. Dread did not book it.",
+      "Shotgun says nothing the entire time. Shotgun never says anything."
+    ],
+    choices: [{ n: "Floor it at the tower.", set: { arrive: "frv" }, to: "finale" }]
+  },
+
+  bunker: {
+    where: "Stable Yard · Below Ground", at: "23:49",
+    title: "The Playground Bunker",
+    p: [
+      "Dread looks at the Leviathans. Then at the shovels. Everyone knows what time it is.",
+      "The 101st digs. Atomic levels a trench with explosives. Talon casts “Move Earth,” which is also just explosives. In four minutes you have the Playground Bunker: a trench fort with a lookout post, a slide, and a hand-painted sign reading NO SQUIDS ALLOWED.",
+      "The Q-Tip guys can’t find you. The Leviathans can’t hit you. And Atomic’s last blast breaks through into an old maintenance tunnel that runs straight under the control tower."
+    ],
+    choices: [{ n: "Take the tunnel.", set: { arrive: "tunnel" }, to: "finale" }]
+  },
+
+  bugs: {
+    where: "Kringle Station · Candy Cane Mines", at: "23:31",
+    title: "Jenkins’s Choice",
+    p: [
+      "Jenkins picks a spot on the map because it “looked festive.” Jenkins says it was covered in soft, twinkling lights. Jenkins is legally blind.",
+      "They were not lights.",
+      "Your Hellpods slam down in the middle of a Terminid nest that has burrowed into the station’s candy cane mines. The twinkling was bioluminescence. The bugs have been eating peppermint for weeks, and they are extremely wired. A Charger with a red-and-white striped shell turns toward you. It smells incredible.",
+      "Over comms, Corporal Branagan holds what’s left of his hands up to the camera. “I told you,” he says. “I TOLD you about bug nests.”"
+    ],
+    choices: [
+      { n: "Close the bug holes. All of them.", to: "bug_holes" },
+      { n: "Ride the Charger.", sub: "Nobody has ever recommended this.", to: "charger_ride" }
+    ]
+  },
+
+  bug_holes: {
+    where: "Kringle Station · Candy Cane Mines", at: "23:43",
+    title: "Peppermint Infestation",
+    p: [
+      "You fight the way the 101st always fights: loud, messy, and having the time of your lives. Talon opens with a giga grenade, which is overkill for a bug hole. It works anyway.",
+      { when: s => s.loadout === "fire", t: "“I CAST STINKING CLOUD!” Talon yells, gassing the next three holes. The whole nest smells like burnt peppermint. Honestly? Not bad." },
+      { when: s => s.loadout === "tree", t: "Your sentries fill the cavern with tracer fire, and the Resupply pods you stacked at the entrance make a pretty good barricade, and an even better Christmas tree." },
+      "Dread drops the last grenade into the last hole. It collapses, floor and all, revealing an old maintenance tunnel that runs straight toward the control tower.",
+      "“Tell Jenkins good pick,” Dread says. “Really?” says Talon. “No. But it worked.”"
+    ],
+    choices: [{ n: "Follow the tunnel.", set: { arrive: "tunnel" }, to: "finale" }]
+  },
+
+  charger_ride: {
+    where: "Kringle Station · Candy Cane Mines", at: "23:41",
+    title: "The Peppermint Express",
+    p: [
+      "You sprint at the Charger, vault onto its striped back, and hold on. It bucks, shrieks, and takes off like a sugar-fueled freight train. Talon and Shotgun grab your belt. Dread grabs Shotgun. Atomic arrives last, by rocket jump, and lands on Dread.",
+      "Five divers. One enraged Terminid. It smashes through a wall, then another wall, then a very surprised Automaton patrol.",
+      "“I’m not even mad,” Dread shouts over the screaming. “This is the best thing I’ve ever seen.”"
+    ],
+    choices: [{ n: "Steer it at the tower!", sub: "You cannot steer it.", set: { arrive: "charger" }, to: "finale" }]
+  },
+
+  supply_tree: {
+    where: "Kringle Station · Courtyard", at: "23:38",
+    title: "The Sacred Supply Tree",
+    p: [
+      "You land in the station courtyard and get to work. Resupply pod. Resupply pod. Resupply pod. Resupply pod. Stacked just right, with a ring of mines around the base and sentries for ornaments, it becomes the most sacred object the 101st has: the Supply Tree.",
+      "A squad of SEAF troopers, the Blueberries, wander over to admire it. They walk directly into the minefield. Every one of them. Steve goes first. It’s always Steve.",
+      "Then the ground shakes. Up in the control tower, something enormous has spotted the most festive object on the planet, and it’s coming down to take it.",
+      "Dread cracks his knuckles. “Nobody touches the tree.”"
+    ],
+    choices: [{ n: "Defend the tree.", set: { treeBuilt: true, arrive: "tree" }, to: "finale" }]
+  },
+
+  finale: {
+    where: "Kringle Station · Final Objective", at: "23:57",
+    title: "The KR-4MP",
+    p: [
+      { when: s => s.arrive === "elves", t: "You storm the control tower with forty armed and extremely motivated Seasonal Liberty Volunteers at your back." },
+      { when: s => s.arrive === "hulk", t: "You climb the last stair with the Hulk still smoking below you." },
+      { when: s => s.arrive === "sleigh", t: "The sleigh comes in low over the station, eight cyborg reindeer at full burn, Shotgun silent at the reins and Dread pounding on the inside of a door that shouldn’t exist. It skids to a stop on the tower roof." },
+      { when: s => s.arrive === "frv", t: "The FRV launches off the ridge, clears the perimeter wall, and parks itself in the tower lobby. Dread falls out of the back, kisses the floor, and gets up swinging." },
+      { when: s => s.arrive === "tunnel", t: "The tunnel ends right under the control tower. You shove up through the floor grate." },
+      { when: s => s.arrive === "charger", t: "The Charger plows through the tower wall with all five of you still on it, then keels over from what Knight will later describe as a sugar crash." },
+      { when: s => s.arrive === "tree", t: "It comes to you. The thing from the tower stomps down into the courtyard, chains dragging, red eyes locked on the Supply Tree." },
+      "There it is: the KR-4MP, a Factory Strider rebuilt for the holidays, with curved steel horns, chains dragging from its legs, and a bulging sack slung across its back. Inside, thousands of lumps of coal glow orange. Every one is a bomb. Every one has an address.",
+      "Dangling beneath it in a cage is a large man in a red suit with a white beard. He seems very calm, considering. He catches your eye and winks.",
+      "Atomic is already reaching for a stratagem. Dread holds up a hand. “Recruit’s call.” The clock reads 23:57. Three minutes until delivery."
+    ],
+    choices: [
+      { n: "Hellbomb in the sack. Grab Santa. Run.", to: "hellbomb" },
+      { n: "Talon: “I CAST LAKE OF FIRE!”", tag: "I Cast Fireball", when: s => s.loadout === "fire", to: "end_burn" },
+      { n: "Lure it into the Supply Tree minefield.", tag: "Supply Tree", when: s => s.treeBuilt, to: "end_tree" },
+      { n: "Sleigh. Ramming speed.", tag: "Reindeer freed", when: s => s.reindeer, to: "end_sleigh" },
+      { n: "Volunteers: go for the legs.", tag: "Volunteers rescued", when: s => s.elves, to: "end_volunteers" },
+      { n: "Atomic. Danger close.", sub: "A 500kg on your own position. Helldivers never die.", to: "end_danger" },
+      { n: "Dread’s turn.", sub: "The Propaganda Commander has been waiting all night.", to: "dread_cut" }
+    ]
+  },
+
+  dread_cut: {
+    where: "Kringle Station · Final Objective", at: "23:58",
+    title: "Lights, Camera, Liberty",
+    p: [
+      "Dread pulls a Ministry of Truth camera drone out of a pouch. Of course he brought one. They don’t call him the Propaganda Commander for nothing. He hands you the remote. “If we’re saving Freedommas,” he says, “we’re getting it on film.”",
+      "Take one: Dread strides into frame with the Maxigun, opens his mouth to deliver his line, and gets arced by his own K-9. “Reinforcing the Captain,” Knight sighs.",
+      "Take two: Dread shakes it off and raises the Maxigun. Shotgun drives the FRV straight through the shot. Nobody called in an FRV. Nobody knows where it came from.",
+      "Take three: Atomic drops a 500kg on the mark. Dread was standing on the mark. Nobody is surprised.",
+      "Take four: Dread climbs out of his fourth Hellpod of the night, covered in soot, and points straight down the lens. “I’m calling the Full Freedom Package. Gas. Napalm. 380mm. Walking Barrage. Orbital Laser for lighting.” Up in orbit, the Democracy Officer reminds everyone that there is no such thing as a war crime against a robot. Above you, the KR-4MP stops and looks at the sky, like it just figured something out.",
+      "The clock reads 23:59."
+    ],
+    choices: [
+      { n: "Roll camera.", sub: "Give the Captain his shot.", to: "end_propaganda" },
+      { n: "Forget to press record.", sub: "An honest Recruit mistake.", to: "end_blooper" }
+    ]
+  },
+
+  hellbomb: {
+    where: "Kringle Station · Extraction", at: "23:58",
+    title: "Silent Night (Briefly)",
+    p: [
+      "You punch in the stratagem. Hellbombs aren’t subtle, and neither is the plan.",
+      "While Dread and Talon draw fire, Shotgun climbs the Strider’s chain without a sound, cuts the cage loose, and catches a very large man in a red suit, which nobody thought was physically possible. You arm the Hellbomb, heave it into the sack, and dive.",
+      "The explosion lights up {planet} for a full minute. Every lump of coal goes off at once, all of it delivered, for the first and last time, to the KR-4MP.",
+      "Pelican-1 is inbound. You have zero stims, every sample on the planet, and Santa. Atomic is wearing a Portable Hellbomb for reasons nobody has asked about."
+    ],
+    choices: [
+      { n: "Sprint for the Pelican.", to: "end_beacon" },
+      { n: "Mutter “Red dot.”", sub: "Arm Atomic’s Portable Hellbomb at the ramp. It’s tradition.", to: "end_roulette" }
+    ]
+  },
+
+  // ---------------- Endings ----------------
+  end_sleigh: {
+    ending: true, status: "Major Order complete · Legendary",
+    title: "Sleigh of Freedom",
+    p: [
+      "Shotgun cracks the reins. Dread, locked in the back, starts yelling.",
+      "Eight cyborg reindeer hit full rocket burn. The sleigh smashes through the tower window at a speed sleighs were never meant to go. Blitzen spears the coal sack with steel antlers and rips it clean off the Strider’s back while you lean out and cut Santa’s cage free.",
+      "Now you have a sack full of explosive coal and nine seconds. So you do the obvious thing: fly it straight up into the Automaton dropship fleet in orbit and let go.",
+      "From the bridge of the {ship2}, it looks like the most beautiful fireworks show anyone has ever seen. Without its sack, the KR-4MP is just a sad robot in a costume. Atomic deals with it.",
+      "At exactly midnight, Santa takes back the reins. “Not bad, Dreadnaughts,” he says. “Want to help with deliveries?”",
+      "You spend the rest of the night dropping presents down chimneys by Hellpod. Nobody gets hurt. Mostly. Dread gets hurt."
+    ]
+  },
+
+  end_propaganda: {
+    ending: true, fx: "embers", status: "Major Order complete · Now a recruitment poster",
+    title: "Propaganda Commander",
+    p: [
+      "You roll camera. Dread turns his back on the KR-4MP, rests the Maxigun on his shoulder, and starts walking toward you. Slowly. He does not look back.",
+      "Behind him, the Full Freedom Package arrives all at once. The gas rolls in. The napalm follows. The 380mm shells climb the KR-4MP’s legs, the Walking Barrage marches right up behind them, and the Orbital Laser sweeps across the whole thing like a stage light. The coal sack goes up in a chain reaction you can see from the {ship}.",
+      "Santa’s cage drops out of the smoke and lands upright beside Dread, perfectly in frame. Santa gives the camera a thumbs-up. You could not have planned it better.",
+      "Dread stops one step from the lens and delivers his line without a single stutter. The K-9 waits exactly one second after you stop recording, then arcs him anyway. Professional courtesy.",
+      "By morning, the Ministry of Truth has turned it into a recruitment poster: DREAD CAPTAIN JAMES, PROPAGANDA COMMANDER, walking away from an explosion with Santa. Enlistment triples. Dread has it framed next to his treason citations."
+    ]
+  },
+
+  end_blooper: {
+    ending: true, status: "Major Order complete · Footage lost",
+    title: "Blooper Reel",
+    p: [
+      "You forget to press record.",
+      "It is the greatest shot in the history of the 101st. Dread walks away from the KR-4MP in slow motion, Maxigun on his shoulder, while the Full Freedom Package turns the sky into a light show: gas, napalm, 380mm, Walking Barrage, Orbital Laser. The coal sack goes up in a chain reaction you can see from the {ship}. Santa’s cage lands upright beside him, perfectly placed. Dread delivers his line without a single stutter.",
+      "Nobody filmed it.",
+      "The only footage on the drone is takes one through three: the K-9, the FRV and the 500kg. The Ministry of Truth airs them anyway. It becomes the most-watched broadcast in Super Earth history. Enlistment triples. Every new recruit wants to meet the guy who keeps getting run over.",
+      "Dread has not spoken to you since. Lurker plays the tape every Freedommas."
+    ]
+  },
+
+  end_tree: {
+    ending: true, status: "Major Order complete · Tree intact",
+    title: "O Democracy Tree",
+    p: [
+      "Dread plants himself in front of the Supply Tree and waves at the KR-4MP. “Come and get it.”",
+      "It comes. Two hundred tons of festive Automaton stomps straight into the minefield the same way the Blueberries did, with the same result. The mines go off. The sentries open fire. The coal sack catches. Atomic, who has been waiting all night, adds a 500kg, danger close, for the star on top.",
+      "When the smoke clears, the KR-4MP is scrap, Santa’s cage is sitting in the snow, and the Supply Tree is still standing. Not one pod scratched.",
+      "The 101st gathers around it as the clock strikes midnight. Over comms from the {ship}, Sgt. Sunshine starts singing. For once, nobody asks Sunshine to stop.",
+      "Santa sets one more Resupply pod on top of the tree and pats it. “Now that,” he says, “is a tree.”"
+    ]
+  },
+
+  end_burn: {
+    ending: true, fx: "embers", status: "Major Order complete · Everything burned",
+    title: "Everything Burns",
+    p: [
+      "Talon has been waiting all night for this. Possibly all year.",
+      "Talon raises the Stun Lance to the sky and screams, “I CAST LAKE OF FIRE!” The Orbital Napalm Barrage answers. The coal sack catches first. Then the chains. Then the horns. The KR-4MP tries to run and discovers its legs are on fire.",
+      "Shotgun cuts Santa’s cage free and drags him clear as the whole thing goes up like the biggest Yule log in the history of the galaxy. Atomic adds a 500kg, just to be sure.",
+      "Santa asks if he can keep Talon. The answer is no.",
+      "Dread watches the flames with his arms crossed and the K-9 humming at his shoulder. “Everything burns,” he says softly. Snow is falling. It doesn’t stand a chance."
+    ]
+  },
+
+  end_volunteers: {
+    ending: true, status: "Major Order complete · Squad expanded",
+    title: "The Night Shift",
+    p: [
+      "You turn to Supervisor Pinecone. “Legs,” you say.",
+      "Forty Seasonal Liberty Volunteers swarm the KR-4MP like they’ve been waiting their whole lives for this, which, after three centuries of unpaid overtime, they have. They climb. They wrench. They hot-glue. In ninety seconds, its legs are tied together in a perfect bow.",
+      "It topples. Dread catches Santa’s cage. Shotgun defuses the entire coal sack with the new chainsaw, which should not work. It works.",
+      "Afterward, Supervisor Pinecone marches up to Dread with forty tiny, heavily armed Volunteers behind her. “We want in,” she says.",
+      "Dread looks them over. “We take veterans and new recruits,” he says. “Welcome to the 101st.”"
+    ]
+  },
+
+  end_danger: {
+    ending: true, status: "Major Order complete · 5 reinforcements used",
+    title: "Helldivers Never Die",
+    p: [
+      "You look at Atomic. Atomic has been waiting for this since the Hellpod.",
+      "“Danger close?” Atomic asks. “Danger close,” says Dread.",
+      "The 500kg lands exactly where all five of you are standing. You do not survive. Neither does the KR-4MP. The coal sack goes up in a chain reaction that rattles windows on three planets. Santa’s cage drops into a snowbank, completely undamaged. Nobody asks how.",
+      "Eleven seconds later, five fresh Hellpods slam into the snow. “Reinforcing,” says Knight from orbit, sounding tired.",
+      "Santa applauds from the snowbank. “Now THAT,” he says, “goes on the Nice List.”"
+    ]
+  },
+
+  end_beacon: {
+    ending: true, status: "Major Order complete · Beacon unclaimed",
+    title: "Wasn’t Me!",
+    p: [
+      "Halfway to the Pelican, something bounces off your boot. A red beacon. A 380mm barrage beacon. Blinking.",
+      "Everyone stops. Everyone looks at Atomic.",
+      "“Wasn’t me,” Atomic says instantly. “Shotgun. Or the rocks. Ragdoll physics. Could’ve been anybody.”",
+      "The shells come down. The first takes out your last sentry. The second launches Talon into low orbit, still yelling “I CAST FEATHER FALL!” The third lands on the last Automaton dropship on the planet, which honestly had it coming.",
+      "You make the Pelican with zero stims, every sample, and Santa riding piggyback. Talon comes down somewhere over the ocean and is technically fine.",
+      "To this day, nobody has admitted to throwing the beacon. Lurker has suspicions."
+    ]
+  },
+
+  end_roulette: {
+    ending: true, status: "Major Order complete · Tradition upheld",
+    title: "Extraction Roulette",
+    p: [
+      "Pelican-1 drops its ramp. You glance at Dread. Dread glances at the Portable Hellbomb on Atomic’s back. Dread nods.",
+      "You reach over and arm it. “Red dot,” you mutter.",
+      "What follows is the 101st’s most sacred tradition: twelve seconds of screaming, shoving and diving for the ramp while a countdown beeps. Talon makes it. Shotgun makes it, silently, carrying Dread. Atomic does not make it, because Atomic was wearing the bomb.",
+      "Santa makes it. Santa was already sitting down, buckled in, sipping Liber-tea.",
+      "As Kringle Station blossoms into a beautiful orange fireball behind you, he looks around the cabin. “Every one of you is on the Naughty List,” he says. Then he smiles. “Merry Freedommas, Dreadnaughts.”",
+      "Knight reinforces Atomic back on the ship. Atomic is thrilled."
+    ]
+  },
+
+  end_workshop: {
+    ending: true, fx: "embers", status: "Major Order complete (technically)",
+    title: "Everything Burns (Including the Presents)",
+    p: [
+      "Dread looks at Talon. Talon looks at Dread. Nobody says no.",
+      "Talon raises the staff. “I CAST FIREBALL!” The napalm lands squarely on the workshop. The bot toys burn. The Hulk burns. The conveyor belts burn. So do 4.2 million presents, most of the North Wing, and, luckily, the KR-4MP and its entire sack of coal, which were parked upstairs.",
+      "Santa strolls out of the inferno with forty Volunteers in his arms and soot in his beard. He does not look jolly.",
+      "High Command’s statement the next morning is brief: Freedommas has been liberated from the tyranny of presents. Citizens are reminded that the true gift is Democracy. Please stop asking about your packages.",
+      "Dread calls it the best Freedommas ever. “Everything burns,” he says."
+    ]
+  },
+
+  end_parade: {
+    ending: true, fail: true, status: "Major Order complete · Glory stolen",
+    title: "Parade Duty",
+    p: [
+      "The 101st goes where High Command tells it to. You spend Freedommas Eve guarding a parade float shaped like a giant patriotic turkey.",
+      "At 23:58, the war feed cuts in live from Kringle Station. It’s CulDeSacJack and the crew of the SES Queen of Urach, standing on a smoking pile of robot, holding Santa over their heads like a trophy.",
+      "High Command awards them the Freedommas Medal of Valor. The 101st is awarded the turkey.",
+      "Dread watches the feed for a long time without blinking. “Never again,” he says. “Next time, we break formation.”",
+      "“We don’t talk about that Freedommas,” says Lurker."
+    ]
+  },
+
+  end_eggnog: {
+    ending: true, fail: true, status: "Major Order complete (without you)",
+    title: "Court-Martialed for Festivity",
+    p: [
+      "You wake up in the brig on December 26th, wearing tinsel you don’t remember putting on.",
+      "Through the bars, you watch the war feed: the Dreadnaughts saved Freedommas without you. Jenkins got a medal for it. Jenkins is holding the medal up to the camera, slightly to the left of the camera.",
+      "The Democracy Officer slides a citation through the bars: Excessive Merriment in the Face of a Major Order. Your Super Credits have been donated to a War Bond in your name.",
+      "“That one’s still my favorite,” Lurker says, topping off the glass. “Gets funnier every year.”"
+    ]
+  },
+
+  end_meta: {
+    ending: true, fail: true, status: "Major Order complete · Fun not detected",
+    title: "Doing It Wrong",
+    p: [
+      "The mission takes four minutes and eleven seconds.",
+      "You drop, you snipe, you laser, you extract. Santa is rescued. The coal is defused. Freedommas is saved. Nobody laughs once. Nobody gets run over by the FRV. Nobody gets launched into orbit.",
+      "High Command is so impressed that it forgives the treason and awards you a medal shaped like a spreadsheet.",
+      "Back on the ship, the eggnog is gone and the tinsel is down. Talon has requested a transfer to a squad that still believes in magic.",
+      "Dread pins the medal on you himself. “Congratulations, Recruit,” he says. “You did everything right. You just did it wrong.”"
+    ]
+  }
+};
+</script>
+
+<script>
+(function () {
+  const MOTTO = "We ain’t heroes, we’re just what freedom needs.";
+  const STORE_KEY = "a101-christmas-endings";
+  const app = document.getElementById("app");
+  const hud = document.getElementById("hud");
+
+  const fill = s => String(s).replace(/\{(\w+)\}/g, (m, k) => (k in NAMES ? NAMES[k] : m));
+  const fresh = () => ({ node: "title", loadout: null, method: null, arrive: null, elves: false, reindeer: false, gambit: false, treeBuilt: false, metaSeen: false });
+
+  let state = fresh();
+  let past = [];
+
+  function loadFound() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]").filter(k => ENDINGS.includes(k)); }
+    catch (e) { return memFound; }
+  }
+  let memFound = [];
+  function saveFound(list) {
+    memFound = list;
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); } catch (e) { /* storage unavailable */ }
+  }
+
+  const visibleChoices = node => (node.choices || []).filter(c => !c.when || c.when(state));
+  const visibleParas = node => (node.p || []).filter(x => typeof x === "string" || !x.when || x.when(state)).map(x => typeof x === "string" ? x : x.t);
+
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = fill(text);
+    return e;
+  }
+
+  function minutesLeft(at) {
+    const [h, m] = at.split(":").map(Number);
+    return 24 * 60 - (h * 60 + m);
+  }
+
+  function renderHud(node) {
+    hud.textContent = "";
+    const left = el("div", "group");
+    const ship = el("span"); ship.append("Ship ", el("b", null, NAMES.ship)); left.append(ship);
+    const mo = el("span"); mo.append("Mission ", el("b", null, "Operation Silent Night")); left.append(mo);
+
+    const right = el("div", "group");
+    if (state.gambit) {
+      const st = el("span"); st.append("Status ", el("b", "hot", "Traitors (again)")); right.append(st);
+    }
+    if (state.loadout) {
+      const lo = el("span"); lo.append("Loadout ", el("b", null, LOADOUT_NAMES[state.loadout])); right.append(lo);
+    }
+    const clock = el("span", "clock");
+    if (node.ending) {
+      clock.append("Coal delivery ", el("b", "hot", "Canceled"));
+    } else if (node.at) {
+      const left = minutesLeft(node.at);
+      const hh = String(Math.floor(left / 60)).padStart(2, "0");
+      const mm = String(left % 60).padStart(2, "0");
+      clock.append("Coal delivery in ", el("b", "hot", `${hh}:${mm}`));
+    } else {
+      clock.append("Dec 24 ", el("b", "hot", "21:45 SEST"));
+    }
+    right.append(clock);
+    const found = loadFound();
+    const en = el("span"); en.append("Endings ", el("b", null, `${found.length}/${ENDINGS.length}`)); right.append(en);
+    hud.append(left, right);
+  }
+
+  function choiceList(node) {
+    const list = el("ol", "choices");
+    visibleChoices(node).forEach((c, i) => {
+      const li = document.createElement("li");
+      const b = el("button", "choice");
+      b.type = "button";
+      b.id = `choice-${i + 1}`;
+      b.setAttribute("aria-label", `Choice ${i + 1}: ${fill(c.n)}`);
+      const num = el("span", "num", String(i + 1)); num.setAttribute("aria-hidden", "true");
+      const body = el("span", "body");
+      body.append(el("span", "label", c.n));
+      if (c.sub) body.append(el("span", "sub", c.sub));
+      if (c.tag) body.append(el("span", "tag", c.tag));
+      b.append(num, body);
+      b.addEventListener("click", () => choose(i));
+      li.append(b);
+      list.append(li);
+    });
+    return list;
+  }
+
+  function controls(isEnding) {
+    const bar = el("div", "controls");
+    const vote = el("span", "vote");
+    const n = visibleChoices(STORY[state.node]).length;
+    if (!isEnding && n > 1) { vote.append("Pick ", el("b", null, `1–${n}`), " · or chat votes"); }
+    else if (!isEnding) { vote.append("Press ", el("b", null, "1"), " to continue"); }
+    else { vote.append("Ending reached"); }
+    const btns = el("div", "btns");
+    const back = el("button", "ctl", "Back"); back.type = "button"; back.id = "btn-back";
+    back.disabled = past.length === 0; back.addEventListener("click", goBack);
+    const restart = el("button", "ctl", "Restart"); restart.type = "button"; restart.id = "btn-restart";
+    restart.disabled = state.node === "title"; restart.addEventListener("click", doRestart);
+    btns.append(back, restart);
+    bar.append(vote, btns);
+    return bar;
+  }
+
+  function endingsList(currentKey) {
+    const found = loadFound();
+    const wrap = el("section");
+    wrap.append(el("p", "endings-head", `Endings found: ${found.length} of ${ENDINGS.length}`));
+    const list = el("ol", "endings");
+    ENDINGS.forEach((k, i) => {
+      const got = found.includes(k);
+      const li = el("li", (got ? "found" : "") + (k === currentKey ? " now" : ""));
+      li.append(el("span", "n", String(i + 1).padStart(2, "0")), el("span", null, got ? STORY[k].title : "Classified"));
+      list.append(li);
+    });
+    wrap.append(list);
+    return wrap;
+  }
+
+  function render() {
+    const node = STORY[state.node];
+    document.body.classList.toggle("festive", state.node === "title" || !!node.ending);
+    setFx(node.fx || "snow");
+
+    if (node.ending) {
+      const found = loadFound();
+      if (!found.includes(state.node)) saveFound(found.concat(state.node));
+    }
+    renderHud(node);
+    app.textContent = "";
+    const scene = el("div", "scene");
+
+    if (node.type === "title") {
+      scene.append(el("p", "kicker", "As told by Lurker, Lore Keeper of the 101st Dreadnaughts"));
+      const h = el("h1", "title-mark"); h.tabIndex = -1;
+      h.append(el("span", "t1", "A 101"), el("span", "t2", "Christmas Story"));
+      scene.append(h);
+      scene.append(el("p", "op", "Operation Silent Night"));
+      const prose = el("div", "prose");
+      prose.append(
+        el("p", null, "It’s Freedommas Eve. The Automatons have kidnapped Santa, hijacked his Naughty List, and loaded a sack with enough explosive coal to hit every citizen of Super Earth by midnight. High Command says it’s propaganda and orders everyone to the parade."),
+        el("p", null, "Dread Captain James has other ideas.")
+      );
+      scene.append(prose);
+      const how = el("p", "howto");
+      how.append(el("b", null, "How to play: "), "you’re the 101st’s newest recruit, dropping with Dread, Talon, Shotgun and Atomic. Tap a choice, or use the number keys (B goes back). On stream, read each scene aloud and let chat vote with the numbers. Some choices only show up if you brought the right gear. " + ENDINGS.length + " endings to find.");
+      scene.append(how);
+      scene.append(choiceList(node));
+      scene.append(endingsList(null));
+      scene.append(el("p", "fine", "Fan-made for the 101st. Not affiliated with Arrowhead Game Studios or Sony Interactive Entertainment."));
+      app.append(scene);
+      focusHeading();
+      return;
+    }
+
+    const kicker = el("p", "kicker");
+    if (node.ending) {
+      kicker.append(el("span", null, "As told by Lurker"), el("span", null, "Dec 25 · 00:00 SEST"));
+    } else {
+      kicker.append(el("span", null, node.where), el("span", null, `${node.at} SEST`));
+    }
+    scene.append(kicker);
+
+    if (node.ending) scene.append(el("p", "stamp" + (node.fail ? " fail" : ""), node.status));
+    const h = el("h1", null, node.title); h.tabIndex = -1; scene.append(h);
+
+    if (node.tx) {
+      const tx = el("div", "tx");
+      tx.append(el("p", "tx-head", "Priority transmission · High Command"));
+      node.tx.forEach(line => {
+        const loud = line.startsWith("!");
+        tx.append(el("p", loud ? "loud" : null, loud ? line.slice(1) : line));
+      });
+      scene.append(tx);
+    }
+
+    const prose = el("div", "prose");
+    visibleParas(node).forEach(t => prose.append(el("p", null, t)));
+    scene.append(prose);
+
+    if (node.ending) {
+      scene.append(el("p", "motto", MOTTO));
+      const again = el("button", "big-btn", "Drop again, Recruit"); again.type = "button"; again.id = "btn-again";
+      again.addEventListener("click", doRestart);
+      scene.append(again);
+      scene.append(endingsList(state.node));
+    } else {
+      scene.append(choiceList(node));
+    }
+    scene.append(controls(!!node.ending));
+    app.append(scene);
+    focusHeading();
+  }
+
+  function focusHeading() {
+    window.scrollTo(0, 0);
+    const h = app.querySelector("h1");
+    if (h) h.focus({ preventScroll: true });
+  }
+
+  function choose(i) {
+    const node = STORY[state.node];
+    const c = visibleChoices(node)[i];
+    if (!c) return;
+    past.push(JSON.parse(JSON.stringify(state)));
+    state = Object.assign({}, state, c.set || {}, { node: c.to });
+    render();
+  }
+  function goBack() {
+    if (!past.length) return;
+    state = past.pop();
+    render();
+  }
+  function doRestart() {
+    past = [];
+    state = fresh();
+    render();
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const node = STORY[state.node];
+    if (/^[1-9]$/.test(e.key) && !node.ending) { choose(Number(e.key) - 1); e.preventDefault(); }
+    else if ((e.key === "b" || e.key === "B" || e.key === "Backspace") && past.length) { goBack(); e.preventDefault(); }
+    else if ((e.key === "Enter" || e.key === " ") && node.ending && document.activeElement === app.querySelector("h1")) { doRestart(); e.preventDefault(); }
+  });
+
+  // ---- Snow / embers ----
+  const canvas = document.getElementById("fx");
+  const ctx = canvas.getContext("2d");
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let mode = "snow", parts = [], W = 0, H = 0, raf = 0;
+
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function spawn(fromEdge) {
+    const ember = mode === "embers";
+    return {
+      x: Math.random() * W,
+      y: fromEdge ? (ember ? H + 10 : -10) : Math.random() * H,
+      r: ember ? 1 + Math.random() * 2.2 : 0.8 + Math.random() * 2.2,
+      vy: ember ? -(0.5 + Math.random() * 1.3) : 0.35 + Math.random() * 0.9,
+      vx: (Math.random() - 0.5) * 0.4,
+      ph: Math.random() * Math.PI * 2,
+      a: ember ? 0.5 + Math.random() * 0.5 : 0.18 + Math.random() * 0.34
+    };
+  }
+  function populate() {
+    const count = Math.round(Math.min(110, Math.max(40, (W * H) / 14000)));
+    parts = Array.from({ length: count }, () => spawn(false));
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const ember = mode === "embers";
+    for (const p of parts) {
+      if (!reduce) {
+        p.ph += 0.01;
+        p.x += p.vx + Math.sin(p.ph) * 0.3;
+        p.y += p.vy;
+        if (ember) p.a -= 0.0015;
+        if (p.y > H + 12 || p.y < -12 || p.a <= 0.05) Object.assign(p, spawn(true));
+      }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = ember ? `rgba(255, ${120 + Math.round(p.r * 30)}, 40, ${p.a})` : `rgba(239, 233, 218, ${p.a})`;
+      ctx.fill();
+    }
+    if (!reduce) raf = requestAnimationFrame(draw);
+  }
+  function setFx(next) {
+    if (next === mode && parts.length) return;
+    mode = next;
+    populate();
+    if (reduce) draw();
+  }
+  // Phones fire resize when the address bar shows or hides while scrolling (height only).
+  // Only respawn the snow when the width changes, so flakes don't jump mid-scroll.
+  window.addEventListener("resize", () => {
+    const prevW = W;
+    resize();
+    if (W !== prevW) populate();
+    if (reduce) draw();
+  });
+  resize(); populate();
+  if (!reduce) raf = requestAnimationFrame(draw); else draw();
+
+  // ---- Boot (keeps place across republishes) ----
+  function start(data) {
+    if (data && data.state && STORY[data.state.node]) {
+      state = data.state;
+      past = Array.isArray(data.past) ? data.past : [];
+    }
+    render();
+  }
+  window.claude?.hot?.snapshot?.(() => ({ state, past }));
+  window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
+</body>
+</html>
