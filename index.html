@@ -4,6 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A 101 Christmas Story</title>
+<meta name="description" content="It’s Freedommas Eve and the Automatons have kidnapped Santa. Choose every move the 101st Dreadnaughts make. 13 endings to find.">
+<meta name="theme-color" content="#0c0e10">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="101st Dreadnaughts">
+<meta property="og:title" content="A 101 Christmas Story · Operation Silent Night">
+<meta property="og:description" content="It’s Freedommas Eve and the Automatons have kidnapped Santa. Choose every move the 101st Dreadnaughts make. 13 endings to find.">
+<meta property="og:url" content="https://culdesacjack.github.io/A-101-Christmas-Story/">
+<meta property="og:image" content="https://culdesacjack.github.io/A-101-Christmas-Story/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A 101 Christmas Story title card: yellow stencil lettering on a dark background with falling snow.">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira+Stencil+One&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
@@ -16,7 +28,8 @@
   --ink: #efe9da;
   --muted: #9d9786;
   --yellow: #f3d21c;
-  --red: #d3302b;
+  --red: #d3302b;      /* stripes and borders */
+  --red-text: #ec4f48; /* red words: brighter so small text stays readable (4.86:1 on buttons) */
   --font-display: "Saira Stencil One", Impact, "Arial Narrow Bold", sans-serif;
   --font-body: "Barlow", "Helvetica Neue", Arial, sans-serif;
   --font-hud: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
@@ -103,7 +116,7 @@ h1:focus { outline: none; }
 .choice .tag {
   align-self: flex-start; margin-top: 2px;
   font-family: var(--font-hud); font-weight: 700; font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--red); border: 1px solid var(--red); padding: 2px 7px;
+  color: var(--red-text); border: 1px solid var(--red-text); padding: 2px 7px;
 }
 .choice:hover { border-color: var(--yellow); transform: translateX(3px); }
 .choice:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
@@ -127,7 +140,7 @@ h1:focus { outline: none; }
 .title-mark { font-family: var(--font-display); line-height: .9; margin: 0; font-weight: 400; text-wrap: balance; }
 .title-mark .t1 { display: block; color: var(--yellow); font-size: clamp(64px, 14vw, 150px); }
 .title-mark .t2 { display: block; font-size: clamp(38px, 7.4vw, 82px); }
-.op { font-family: var(--font-hud); font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--red); font-size: clamp(15px, 2vw, 19px); }
+.op { font-family: var(--font-hud); font-weight: 700; letter-spacing: .3em; text-transform: uppercase; color: var(--red-text); font-size: clamp(15px, 2vw, 19px); }
 .howto {
   border-left: 4px solid var(--yellow); padding: 4px 0 4px 14px; max-width: 64ch;
   color: var(--muted); font-size: 17px; line-height: 1.45;
@@ -141,7 +154,7 @@ h1:focus { outline: none; }
   font-family: var(--font-hud); font-weight: 700; font-size: 15px; letter-spacing: .16em; text-transform: uppercase;
   color: var(--yellow); border: 2px solid var(--yellow); padding: 6px 12px; transform: rotate(-1.2deg);
 }
-.stamp.fail { color: var(--red); border-color: var(--red); }
+.stamp.fail { color: var(--red-text); border-color: var(--red-text); }
 .motto {
   font-family: var(--font-display); font-size: clamp(22px, 3.2vw, 32px); line-height: 1.15; color: var(--yellow);
   border-left: 4px solid var(--red); padding-left: 14px; margin: 4px 0 0; max-width: 30ch;
@@ -927,14 +940,15 @@ const STORY = {
     const node = STORY[state.node];
     if (/^[1-9]$/.test(e.key) && !node.ending) { choose(Number(e.key) - 1); e.preventDefault(); }
     else if ((e.key === "b" || e.key === "B" || e.key === "Backspace") && past.length) { goBack(); e.preventDefault(); }
-    else if ((e.key === "Enter" || e.key === " ") && node.ending && document.activeElement === app.querySelector("h1")) { doRestart(); e.preventDefault(); }
+    // Enter only: Space is how people scroll down a long ending, so it must not restart.
+    else if (e.key === "Enter" && node.ending && document.activeElement === app.querySelector("h1")) { doRestart(); e.preventDefault(); }
   });
 
   // ---- Snow / embers ----
   const canvas = document.getElementById("fx");
   const ctx = canvas.getContext("2d");
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let mode = "snow", parts = [], W = 0, H = 0, raf = 0;
+  let mode = "snow", parts = [], W = 0, H = 0, raf = 0, lastT = 0;
 
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -958,15 +972,19 @@ const STORY = {
     const count = Math.round(Math.min(110, Math.max(40, (W * H) / 14000)));
     parts = Array.from({ length: count }, () => spawn(false));
   }
-  function draw() {
+  function draw(now) {
+    // Move by elapsed time, not per frame, so snow falls at the same speed on 60, 120 and 144Hz screens.
+    // dt = 1 means one 60Hz frame; capped so a backgrounded tab doesn't jump on return.
+    const dt = lastT && now ? Math.min((now - lastT) / (1000 / 60), 3) : 1;
+    lastT = now || 0;
     ctx.clearRect(0, 0, W, H);
     const ember = mode === "embers";
     for (const p of parts) {
       if (!reduce) {
-        p.ph += 0.01;
-        p.x += p.vx + Math.sin(p.ph) * 0.3;
-        p.y += p.vy;
-        if (ember) p.a -= 0.0015;
+        p.ph += 0.01 * dt;
+        p.x += (p.vx + Math.sin(p.ph) * 0.3) * dt;
+        p.y += p.vy * dt;
+        if (ember) p.a -= 0.0015 * dt;
         if (p.y > H + 12 || p.y < -12 || p.a <= 0.05) Object.assign(p, spawn(true));
       }
       ctx.beginPath();
